@@ -117,9 +117,11 @@ async function ipExtRenderDetailPage ($content) {
   mw.config.set('wgRelevantUserName', ip)
   const whoisResult = await fetch(`https://whois-dev.toolforge.org/w/${ip}/lookup/json`)
   const whoisJson = await whoisResult.json()
-  const geoResult = await fetch(`https://tools.keycdn.com/geo.json?host=${ip}`,
-    { headers: { 'User-Agent': 'keycdn-tools:https://en.wikipedia.org/wiki/User:GeneralNotability/ip-ext-info.js'}})
-  const geoJson = await geoResult.json() // Why is json() async?
+  const geoHeaders = new Headers({
+    'User-Agent': 'keycdn-tools:https://en.wikipedia.org/wiki/User:GeneralNotability/ip-ext-info.js'
+  })
+  //const geoResult = await fetch(`https://tools.keycdn.com/geo.json?host=${ip}`, { headers: geoHeaders })
+  //const geoJson = await geoResult.json()
 
   const lastNet = whoisJson.nets[whoisJson.nets.length - 1]
   $content.append($('<p>').text(`Range: ${lastNet.cidr}`))
@@ -128,7 +130,7 @@ async function ipExtRenderDetailPage ($content) {
   $content.append($('<p>').text(`City: ${lastNet.city}`))
 
   $content.append(ipExtMakeWHOISAccordion(ip, whoisJson))
-  $content.append(ipExtMakeGeoAccordion(ip, geoJson))
+  //$content.append(ipExtMakeGeoAccordion(ip, geoJson))
 }
 
 // On window load, get all the IPs on the page and WHOIS them asynchronously
