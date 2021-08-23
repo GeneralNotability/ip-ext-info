@@ -81,9 +81,28 @@ function ipExtMakeWHOISAccordion(ip, whoisJson) {
   $whoisAccordion.append($whoisAccordionContent)
   $whoisAccordion.makeCollapsible({ collapsed: true })
   // Add the header
-  $('.mw-collapsible-toggle', $whoisAccordion).after($('<h3>').append($('<a>').attr('href', `https://whois-dev.toolforge.org/w/${ip}/lookup/json`).text('WHOIS')))
+  $('.mw-collapsible-toggle', $whoisAccordion).after($('<h3>').append($('<a>').attr('href', `https://whois-referral.toolforge.org/gateway.py?lookup=true&ip=${ip}`).text('WHOIS')))
 
   return $whoisAccordion
+}
+
+async function ipExtMakeGeoAccordion(ip, geoJson) {
+  // build geolocation accordion
+  // IP Location Finder by KeyCDN, https://tools.keycdn.com/geo
+  const $geoAccordion = $('<div>').addClass('toccolours mw-collapsible').attr('id', 'whois-accordion')
+  const $geoAccordionContent = $('<div>')
+  $geoAccordionContent.append($('<p>').text(`Hostname: ${geoJson.rdns}`))
+  $geoAccordionContent.append($('<p>').text(`Lat/Lon: (${geoJson.latitude}, ${geoJson.longitude})`))
+  $geoAccordionContent.append($('<p>').text(`City: ${geoJson.city}`))
+  $geoAccordionContent.append($('<p>').text(`Region: ${geoJson.region_name}`))
+  $geoAccordionContent.append($('<p>').text(`Country: ${geoJson.country_name}`))
+
+  $geoAccordion.append($geoAccordionContent)
+  $geoAccordion.makeCollapsible({ collapsed: true })
+  // Add the header
+  $('.mw-collapsible-toggle', $geoAccordion).after($('<h3>').append($('<a>').attr('href', `https://tools.keycdn.com/geo?host=${ip}`).text('Geolocation')))
+
+  return $geoAccordion
 }
 
 async function ipExtRenderDetailPage ($content) {
@@ -98,6 +117,10 @@ async function ipExtRenderDetailPage ($content) {
   mw.config.set('wgRelevantUserName', ip)
   const whoisResult = await fetch(`https://whois-dev.toolforge.org/w/${ip}/lookup/json`)
   const whoisJson = await whoisResult.json()
+  const geoResult = await fetch(`https://tools.keycdn.com/geo.json?host=${ip}`,
+    { headers: { 'User-Agent': 'keycdn-tools:https://en.wikipedia.org/wiki/User:GeneralNotability/ip-ext-info.js'}})
+  const geoJson = await geoResult.json() // Why is json() async?
+
   const lastNet = whoisJson.nets[whoisJson.nets.length - 1]
   $content.append($('<p>').text(`Range: ${lastNet.cidr}`))
   $content.append($('<p>').text(`ISP: ${lastNet.description}`))
@@ -105,6 +128,7 @@ async function ipExtRenderDetailPage ($content) {
   $content.append($('<p>').text(`City: ${lastNet.city}`))
 
   $content.append(ipExtMakeWHOISAccordion(ip, whoisJson))
+  $content.append(ipExtMakeGeoAccordion(ip, geoJson))
 }
 
 // On window load, get all the IPs on the page and WHOIS them asynchronously
