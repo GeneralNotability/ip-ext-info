@@ -38,4 +38,4 @@ jobs:
         run: |
           echo "('GeneralNotability', BotPassword('${BOT_NAME}', '${BOT_PASS}'))" > user-password.py
           chmod 600 user-password.py
-          python3 deploy.py --file ip-ext-info.js --target User:GeneralNotability/spihelper.js --summary "Deploying revision [$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/${GITHUB_SHA} ${GITHUB_SHA}]"
+          python3 deploy.py --file ip-ext-info.js --target User:GeneralNotability/ip-ext-info.js --summary "Deploying revision [$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/${GITHUB_SHA} ${GITHUB_SHA}]"
