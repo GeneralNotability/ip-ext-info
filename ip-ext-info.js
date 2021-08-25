@@ -6,7 +6,6 @@
 /* global mw, $  */
 
 const ipExtIcon = 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Gnome-fs-web.svg/20px-Gnome-fs-web.svg.png'
-const ipExtDetailPage = 'Special:BlankPage/ExtendedIPInfo'
 
 /**
  * Get all userlinks on the page
@@ -70,81 +69,15 @@ async function ipExtWHOISInline (ip) {
   return `${ip}:\n  ASN: ${whoisJson.asn}\n  ASN range: ${whoisJson.asn_cidr}\n  ASN country: ${whoisJson.asn_country_code}\n  ISP: ${providers}`
 }
 
-function ipExtMakeWHOISAccordion(ip, whoisJson) {
-  // build WHOIS accordion
-  const $whoisAccordion = $('<div>').addClass('toccolours mw-collapsible').attr('id', 'whois-accordion')
-
-  const $whoisAccordionContent = $('<div>')
-  $whoisAccordionContent.append($('<p>').text(`ASN: ${whoisJson.asn}`))
-  $whoisAccordionContent.append($('<p>').text(`ASN CIDR: ${whoisJson.asn_cidr}`))
-
-  $whoisAccordion.append($whoisAccordionContent)
-  $whoisAccordion.makeCollapsible({ collapsed: true })
-  // Add the header
-  $('.mw-collapsible-toggle', $whoisAccordion).after($('<h3>').append($('<a>').attr('href', `https://whois-referral.toolforge.org/gateway.py?lookup=true&ip=${ip}`).text('WHOIS')))
-
-  return $whoisAccordion
-}
-
-async function ipExtMakeGeoAccordion(ip, geoJson) {
-  // build geolocation accordion
-  // IP Location Finder by KeyCDN, https://tools.keycdn.com/geo
-  const $geoAccordion = $('<div>').addClass('toccolours mw-collapsible').attr('id', 'whois-accordion')
-  const $geoAccordionContent = $('<div>')
-  $geoAccordionContent.append($('<p>').text(`Hostname: ${geoJson.rdns}`))
-  $geoAccordionContent.append($('<p>').text(`Lat/Lon: (${geoJson.latitude}, ${geoJson.longitude})`))
-  $geoAccordionContent.append($('<p>').text(`City: ${geoJson.city}`))
-  $geoAccordionContent.append($('<p>').text(`Region: ${geoJson.region_name}`))
-  $geoAccordionContent.append($('<p>').text(`Country: ${geoJson.country_name}`))
-
-  $geoAccordion.append($geoAccordionContent)
-  $geoAccordion.makeCollapsible({ collapsed: true })
-  // Add the header
-  $('.mw-collapsible-toggle', $geoAccordion).after($('<h3>').append($('<a>').attr('href', `https://tools.keycdn.com/geo?host=${ip}`).text('Geolocation')))
-
-  return $geoAccordion
-}
-
-async function ipExtRenderDetailPage ($content) {
-  $content.empty()
-  const $header = $('.firstHeading', document)
-  const ip = mw.util.getParamValue('address')
-  if (!ip) {
-    $content.text('Address parameter was not specified in the URL')
-    return
-  }
-  $header.text(ip)
-  mw.config.set('wgRelevantUserName', ip)
-  const whoisResult = await fetch(`https://whois-dev.toolforge.org/w/${ip}/lookup/json`)
-  const whoisJson = await whoisResult.json()
-  const geoHeaders = new Headers({
-    'User-Agent': 'keycdn-tools:https://en.wikipedia.org/wiki/User:GeneralNotability/ip-ext-info.js'
-  })
-  //const geoResult = await fetch(`https://tools.keycdn.com/geo.json?host=${ip}`, { headers: geoHeaders })
-  //const geoJson = await geoResult.json()
-
-  const lastNet = whoisJson.nets[whoisJson.nets.length - 1]
-  $content.append($('<p>').text(`Range: ${lastNet.cidr}`))
-  $content.append($('<p>').text(`ISP: ${lastNet.description}`))
-  $content.append($('<p>').text(`Country: ${lastNet.country}`))
-  $content.append($('<p>').text(`City: ${lastNet.city}`))
-
-  $content.append(ipExtMakeWHOISAccordion(ip, whoisJson))
-  //$content.append(ipExtMakeGeoAccordion(ip, geoJson))
-}
-
 // On window load, get all the IPs on the page and WHOIS them asynchronously
 $.when($.ready, mw.loader.using(['mediawiki.util', 'jquery.makeCollapsible'])).then(function () {
   mw.hook('wikipage.content').add(function ($content) {
-    if (mw.config.get('wgPageName') === ipExtDetailPage) {
-      ipExtRenderDetailPage($content)
-    }
     const ipsOnPage = ipExtGetIPs($content)
     ipsOnPage.forEach(async (val, ip, _) => {
       const whoisText = await ipExtWHOISInline(ip)
       val.forEach(($link) => {
-        $link.after($('<a>').attr('href', mw.util.getUrl(ipExtDetailPage, { address: ip }))
-          .append($('<img>').attr('src', ipExtIcon).attr('title', mw.html.escape(whoisText))))
+        $link.after($('<a>').attr('href', `https://bullseye.toolforge.org/ip/${ip}`))
+          .append($('<img>').attr('src', ipExtIcon).attr('title', mw.html.escape(whoisText)))
       })
     })
   })
