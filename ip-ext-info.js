@@ -76,7 +76,7 @@ $.when($.ready, mw.loader.using(['mediawiki.util', 'jquery.makeCollapsible'])).t
     ipsOnPage.forEach(async (val, ip, _) => {
       const whoisText = await ipExtWHOISInline(ip)
       val.forEach(($link) => {
-        $link.after($('<a>').attr('href', `https://bullseye.toolforge.org/ip/${ip}`)
+        $link.after($('<a>').attr('href', `https://bullseye.toolforge.org/ip/${ip}`).attr('target', 'blank').attr('rel', 'noopener noreferrer')
           .append($('<img>').attr('src', ipExtIcon).attr('title', mw.html.escape(whoisText))))
       })
     })
