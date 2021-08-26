@@ -60,7 +60,7 @@ function ipExtGetIPs ($content) {
  * @return {Promise<string>} Summary of interesting parts of the IP's WHOIS
  */
 async function ipExtWHOISInline (ip) {
-  const whoisResult = await fetch(`https://whois-dev.toolforge.org/w/${ip}/lookup/json`)
+  const whoisResult = await fetch(`https://whois.toolforge.org/w/${ip}/lookup/json`)
   const whoisJson = await whoisResult.json() // Why is json() async?
   let providers = ''
   whoisJson.nets.forEach((net) => {
